@@ -38,6 +38,7 @@
 
       <!-- Right -->
       <ul class="navbar-nav nav-flex-icons">
+          {%if request.user.is_authenticated%}
         <li class="nav-item">
           <a class="nav-link waves-effect">
             <span class="badge red z-depth-1 mr-1"> 1 </span>
@@ -47,31 +48,30 @@
         </li>
         <li class="nav-item">
           <a
-            href="https://www.facebook.com/mdbootstrap"
-            class="nav-link waves-effect"
-            target="_blank"
-          >
-            <i class="fab fa-facebook-f"></i>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            href="https://twitter.com/MDBootstrap"
-            class="nav-link waves-effect"
-            target="_blank"
-          >
-            <i class="fab fa-twitter"></i>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a
-            href="https://github.com/mdbootstrap/bootstrap-material-design"
+              href="{%url 'account_logout'%}"
             class="nav-link border border-light rounded waves-effect"
-            target="_blank"
           >
-            <i class="fab fa-github mr-2"></i>MDB GitHub
+          Logout
           </a>
         </li>
+        {%else%}
+        <li class="nav-item">
+          <a
+              href="{%url 'account_login'%}"
+            class="nav-link border border-light rounded waves-effect"
+          >
+            Login
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            href="{%url 'account_signup'%}"
+            class="nav-link border border-light rounded waves-effect"
+          >
+          SignUp
+          </a>
+        </li>
+        {%endif%}
       </ul>
     </div>
   </div>
