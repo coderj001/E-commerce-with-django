@@ -1,4 +1,3 @@
-from core.views import demo
 from django.contrib import admin
 from django.urls import include, path
 

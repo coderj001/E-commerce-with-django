@@ -1,11 +1,14 @@
-from core.views import checkoutpage, homepage, productpage
+from core.views import (HomePageView, ProductPageView, add_to_cart,
+                        checkoutpage, remove_from_cart)
 from django.urls import path
 
 app_name='core'
 
 urlpatterns = [
-    path('home/',homepage,name="homepage"),
-    path('',homepage,name="homepage"),
-    path('product/',productpage,name="productpage"),
+    path('home/',HomePageView.as_view(),name="homepage"),
+    path('',HomePageView.as_view(),name="homepage"),
+    path('product/<slug>/',ProductPageView.as_view(),name="productpage"),
     path('checkout/',checkoutpage,name="checkoutpage"),
+    path('add_to_cart/<slug>/',add_to_cart,name="add-to-cart"),
+    path('remove_from_cart/<slug>/',remove_from_cart,name="remove-from-cart"),
 ]
