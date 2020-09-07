@@ -6,25 +6,25 @@ from django.shortcuts import reverse
 from django_extensions.db.fields import AutoSlugField
 
 CATAGORY_CHOICES = (
-        ('S','Shirt'),
-        ('SW','Sport Wear'),
-        ('OW','Outwear'),
+        ('S', 'Shirt'),
+        ('SW', 'Sport Wear'),
+        ('OW', 'Outwear'),
         )
 
 LABEL_CHOICES = (
-        ('P','primary'),
-        ('S','secondary'),
-        ('D','danger'),
+        ('P', 'primary'),
+        ('S', 'secondary'),
+        ('D', 'danger'),
         )
 
 class Item(models.Model):
-    id = models.UUIDField(primary_key=True,editable=False,default=uuid.uuid4)
-    title = models.CharField(max_length=255,blank=False,verbose_name="Item title")
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    title = models.CharField(max_length=255, blank=False, verbose_name="Item title")
     price = models.FloatField(verbose_name="Item price")
-    discount_price = models.FloatField(blank=True,null=True,verbose_name="Item discount price")
-    category = models.CharField(max_length=2,choices=CATAGORY_CHOICES,verbose_name="Select category of product")
-    label = models.CharField(max_length=1,choices=LABEL_CHOICES,verbose_name="Select level of product")
-    slug = models.SlugField(max_length=255,verbose_name="slug field", editable=False)
+    discount_price = models.FloatField(blank=True, null=True, verbose_name="Item discount price")
+    category = models.CharField(max_length=2, choices=CATAGORY_CHOICES, verbose_name="Select category of product")
+    label = models.CharField(max_length=1, choices=LABEL_CHOICES, verbose_name="Select level of product")
+    slug = models.SlugField(max_length=255, verbose_name="slug field", editable=False)
     slug = AutoSlugField(('slug'), max_length=255, unique=True, populate_from=('title','id'))
     description=models.TextField()
 

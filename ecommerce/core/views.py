@@ -4,20 +4,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView
 
-# def homepage(request):
-#     context = {
-#             "items": Item.objects.all()
-#         }
-#     return render(request, "core/homepage.html", context)
 
 class HomePageView(ListView):
     model = Item
     context_object_name = 'items'
+    paginate_by = 10
     template_name = "core/homepage.html"
 
-# def productpage(request):
-#     context = {}
-#     return render(request, "core/productpage.html", context)
 
 class ProductPageView(DetailView):
     model = Item

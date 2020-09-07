@@ -2,16 +2,17 @@
 
 {% load i18n %}
 {% load account socialaccount %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% trans "Sign In" %}{% endblock %}
 
 {% block content %}
 
 {%include "core/navbar.html"%}
-<div class="container mt-5 pt-5 mb-5 pb-5">
+<div class="container mt-4 pt-5 mb-5 pb-5">
     <section class="text-center">
         <div class="row wow fadeIn">
-            <div class="col-6">
+            <div class="col-6 offset-3">
                 <h1>{% trans "Sign In" %}</h1>
 
                 {% get_providers as socialaccount_providers %}
@@ -40,7 +41,7 @@
 
                 <form class="login" method="POST" action="{% url 'account_login' %}">
                     {% csrf_token %}
-                    {{ form.as_p }}
+                    {{ form | crispy }}
                     {% if redirect_field_value %}
                     <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                     {% endif %}
