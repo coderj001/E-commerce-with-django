@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Demo</h1>
+{% if items %}
+    {% for item in items %}
+        {{item.id}}
+        {{item.title}}
+        {{item.price}}
+    {% endfor %}
+{% endif %}
+{% endblock content %}
