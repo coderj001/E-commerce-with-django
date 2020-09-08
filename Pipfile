@@ -8,12 +8,14 @@ pylint = "*"
 django-lint = "*"
 flake8 = "*"
 jira = "*"
+faker = "*"
 
 [packages]
 django = "==3.0.0"
 django-allauth = "*"
 django-extensions = "*"
 django-crispy-forms = "*"
+django-seed = "*"
 
 [requires]
 python_version = "3.8"
