@@ -45,6 +45,7 @@ def add_to_cart(request,slug):
             order_item.quantity+=1
             order_item.save()
             messages.info(request, "This item quantity increased by one.")
+            return redirect("core:order-summery")
         else:
             order.items.add(order_item)
             messages.info(request, "This item was add to your cart.")
@@ -53,7 +54,8 @@ def add_to_cart(request,slug):
         order = Order.objects.create(user=request.user, ordered_date=ordered_date)
         order.items.add(order_item)
         messages.info(request, "Item was added to your cart.")
-    return redirect("core:productpage", slug=slug)
+        return redirect("core:productpage", slug=slug)
+    return redirect("core:order-summery")
 
 @login_required
 def remove_from_cart(request,slug):
@@ -65,6 +67,29 @@ def remove_from_cart(request,slug):
             order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
             order.items.remove(order_item)
             messages.info(request, "This item was removed from your cart.")
+        else:
+            messages.info(request, "Item didn't previously exist.")
+            return redirect("core:productpage", slug=slug)
+    else:
+        messages.info(request, "You don't have active order.")
+        return redirect("core:productpage", slug=slug)
+    return redirect("core:productpage", slug=slug)
+
+@login_required
+def remove_single_item_from_cart(request,slug):
+    item = get_object_or_404(Item,slug=slug)
+    order_qs = Order.objects.filter(user=request.user,ordered=False)
+    if order_qs.exists():
+        order = order_qs[0]
+        if order.items.filter(item__slug=item.slug).exists():
+            order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
+            if order_item.quantity > 1:
+                order_item.quantity -= 1
+                order_item.save()
+            else:
+                order.items.remove(order_item)
+            messages.info(request, "This Item quantity was updated.")
+            return redirect("core:order-summery")
         else:
             messages.info(request, "Item didn't previously exist.")
             return redirect("core:productpage", slug=slug)
