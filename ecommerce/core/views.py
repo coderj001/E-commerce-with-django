@@ -37,12 +37,13 @@ class CheckOutPage(View):
         context = { 'form': form }
         return render(request, "core/checkoutpage.html", context)
     def post(self, request, *args, **kwargs):
-        form = CheckOutForms(request.POST or None)
+        form = CheckOutForm(request.POST or None)
         if form.is_valid():
             print("Form is valid")
-            print(form.cleaned_data())
-        context = { 'form': form }
-        return render(request, "core/checkoutpage.html", context)
+            print(form.cleaned_data)
+            return redirect('core:checkoutpage')
+        messages.info(request, "Failed to checkout.")
+        return redirect('core:checkoutpage')
 
 @login_required
 def add_to_cart(request,slug):
