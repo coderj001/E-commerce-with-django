@@ -9,6 +9,9 @@ django-lint = "*"
 flake8 = "*"
 jira = "*"
 faker = "*"
+ipython = "*"
+ipdb = "*"
+werkzeug = "*"
 
 [packages]
 django = "==3.0.0"

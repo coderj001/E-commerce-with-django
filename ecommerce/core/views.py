@@ -40,6 +40,7 @@ class CheckOutPage(View):
         form = CheckOutForms(request.POST or None)
         if form.is_valid():
             print("Form is valid")
+            print(form.cleaned_data())
         context = { 'form': form }
         return render(request, "core/checkoutpage.html", context)
 
