@@ -1,5 +1,5 @@
 from core.forms import CheckOutForm
-from core.models import Item, Order, OrderItem
+from core.models import BillingAddress, Item, Order, OrderItem
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -38,12 +38,33 @@ class CheckOutPage(View):
         return render(request, "core/checkoutpage.html", context)
     def post(self, request, *args, **kwargs):
         form = CheckOutForm(request.POST or None)
-        if form.is_valid():
-            print("Form is valid")
-            print(form.cleaned_data)
+        try:
+            order = Order.objects.get(user=request.user, ordered=False)
+            if form.is_valid():
+                street_address = form.cleaned_data.get('street_address ')
+                apparment_address = form.cleaned_data.get('apparment_address ')
+                country = form.cleaned_data.get('country ')
+                zipcodes = form.cleaned_data.get('zipcodes ')
+                # TODO: add functionality for there fields
+                # same_shipping_address = form.cleaned_data.get('same_shipping_address ')
+                # save_info = form.cleaned_data.get('save_info ')
+                payment_option = form.cleaned_data.get('payment_option ')
+                billing_address=BillingAddress(
+                        user = request.user,
+                        street_address = street_address,
+                        country = country,
+                        zipcode = zipcode,
+                        )
+                billing_address.save()
+                order.billing_address = billing_address
+                order.ordered = True
+                # TODO: redirect to selected payment options
+                return redirect('core:checkoutpage')
+            messages.info(request, "Failed to checkout.")
             return redirect('core:checkoutpage')
-        messages.info(request, "Failed to checkout.")
-        return redirect('core:checkoutpage')
+        except ObjectDoesNotExist:
+            messages.error(request, 'Order does not exist.')
+            return redirect("core:homepage")
 
 @login_required
 def add_to_cart(request,slug):
