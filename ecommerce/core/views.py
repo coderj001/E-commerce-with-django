@@ -1,3 +1,4 @@
+from core.forms import CheckOutForm
 from core.models import Item, Order, OrderItem
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -30,9 +31,17 @@ class ProductPageView(DetailView):
     context_object_name = 'item'
     template_name = "core/productpage.html"
 
-def checkoutpage(request):
-    context = {}
-    return render(request, "core/checkoutpage.html", context)
+class CheckOutPage(View):
+    def get(self, request, *args, **kwargs):
+        form = CheckOutForm()
+        context = { 'form': form }
+        return render(request, "core/checkoutpage.html", context)
+    def post(self, request, *args, **kwargs):
+        form = CheckOutForms(request.POST or None)
+        if form.is_valid():
+            print("Form is valid")
+        context = { 'form': form }
+        return render(request, "core/checkoutpage.html", context)
 
 @login_required
 def add_to_cart(request,slug):
@@ -66,6 +75,7 @@ def remove_from_cart(request,slug):
         if order.items.filter(item__slug=item.slug).exists():
             order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
             order.items.remove(order_item)
+            order_item.delete()
             messages.info(request, "This item was removed from your cart.")
         else:
             messages.info(request, "Item didn't previously exist.")
@@ -88,6 +98,7 @@ def remove_single_item_from_cart(request,slug):
                 order_item.save()
             else:
                 order.items.remove(order_item)
+                order_item.delete()
             messages.info(request, "This Item quantity was updated.")
             return redirect("core:order-summery")
         else:

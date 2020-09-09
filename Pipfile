@@ -15,6 +15,7 @@ django = "==3.0.0"
 django-allauth = "*"
 django-extensions = "*"
 django-crispy-forms = "*"
+django-countries = "*"
 
 [requires]
 python_version = "3.8"
