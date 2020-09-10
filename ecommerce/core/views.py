@@ -66,6 +66,10 @@ class CheckOutPage(View):
             messages.error(request, 'Order does not exist.')
             return redirect("core:homepage")
 
+class PaymentView(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'core/payment.html')
+
 @login_required
 def add_to_cart(request,slug):
     item = get_object_or_404(Item,slug=slug)
