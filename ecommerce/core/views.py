@@ -53,7 +53,7 @@ class CheckOutPage(View):
                 # TODO: add functionality for there fields
                 # same_shipping_address = form.cleaned_data.get('same_shipping_address ')
                 # save_info = form.cleaned_data.get('save_info ')
-                payment_option = form.cleaned_data.get('payment_option ')
+                payment_option = form.cleaned_data.get('payment_option')
                 billing_address=BillingAddress(
                         user=request.user,
                         street_address=street_address,
@@ -64,7 +64,13 @@ class CheckOutPage(View):
                 order.billing_address = billing_address
                 order.ordered = True
                 # TODO: redirect to selected payment options
-                return redirect('core:payment', payment_option='stripe')
+                if payment_option == 'S':
+                    return redirect('core:payment', payment_option='stripe')
+                if payment_option == 'P':
+                    return redirect('core:payment', payment_option='paypal')
+                else:
+                    messages.info(request, "Invalid Payment Options.")
+                    return redirect('core:checkoutpage')
             messages.info(request, "Failed to checkout.")
             return redirect('core:checkoutpage')
         except ObjectDoesNotExist:
@@ -74,7 +80,11 @@ class CheckOutPage(View):
 class PaymentView(View):
 
     def get(self, request, *args, **kwargs):
-        return render(request, 'core/payment.html')
+        order = Order.objects.get(user=request.user, ordered=False)
+        context = {
+                'order': order
+            }
+        return render(request, 'core/payment.html',context=context)
 
     def post(self, request, *args, **kwargs):
         order = Order.objects.get(user=request.user, ordered=False)
