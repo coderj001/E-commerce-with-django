@@ -97,7 +97,7 @@ def add_to_cart(request,slug):
     return redirect("core:order-summery")
 
 @login_required
-def remove_from_cart(request,slug):
+def remove_from_cart(request, slug):
     item = get_object_or_404(Item,slug=slug)
     order_qs = Order.objects.filter(user=request.user,ordered=False)
     if order_qs.exists():
@@ -116,13 +116,13 @@ def remove_from_cart(request,slug):
     return redirect("core:productpage", slug=slug)
 
 @login_required
-def remove_single_item_from_cart(request,slug):
-    item = get_object_or_404(Item,slug=slug)
-    order_qs = Order.objects.filter(user=request.user,ordered=False)
+def remove_single_item_from_cart(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
     if order_qs.exists():
         order = order_qs[0]
         if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
+            order_item = OrderItem.objects.filter(item=item, user=request.user, ordered=False)[0]
             if order_item.quantity > 1:
                 order_item.quantity -= 1
                 order_item.save()
