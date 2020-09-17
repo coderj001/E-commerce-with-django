@@ -55,16 +55,16 @@ class CheckOutPage(View):
                 # save_info = form.cleaned_data.get('save_info ')
                 payment_option = form.cleaned_data.get('payment_option ')
                 billing_address=BillingAddress(
-                        user = request.user,
-                        street_address = street_address,
-                        country = country,
-                        zipcode = zipcode,
+                        user=request.user,
+                        street_address=street_address,
+                        country=country,
+                        zipcode=zipcode,
                         )
                 billing_address.save()
                 order.billing_address = billing_address
                 order.ordered = True
                 # TODO: redirect to selected payment options
-                return redirect('core:checkoutpage')
+                return redirect('core:payment', payment_option='stripe')
             messages.info(request, "Failed to checkout.")
             return redirect('core:checkoutpage')
         except ObjectDoesNotExist:
@@ -80,24 +80,25 @@ class PaymentView(View):
         order = Order.objects.get(user=request.user, ordered=False)
         token = request.POST.get('stripeToken')
         stripe.api_key = settings.STRIPE_SECRET_KEY
-        amount = order.get_total(),
+        amount = int(order.get_total())
 
         try:
             charge = stripe.Charge.create(
-                    amount=amount,
-                    currency="usd",
+                    description="Software development services",
                     source=token,
+                    amount=amount,
+                    currency="inr",
                 )
             payment = Payment()
             payment.stripe_charge_id = charge['id']
             payment.user = self.request.user
-            payment.amount = amount
+            payment.amount = order.get_total()
             payment.save()
 
             order.ordered = True
             order.payment = payment
             order.save()
-            messages(request, "Your order successfull")
+            messages.info(request, "Your order successfull")
             return redirect("core:homepage")
         except stripe.error.CardError as e:
           # Since it's a decline, stripe.error.CardError will be caught
@@ -108,33 +109,33 @@ class PaymentView(View):
           # param is '' in this case
           print('Param is: %s' % e.error.param)
           print('Message is: %s' % e.error.message)
-          messages(request, e.error.message)
+          messages.info(request, e.error.message)
           return redirect("core:homepage")
         except stripe.error.RateLimitError as e:
           # Too many requests made to the API too quickly
-          messages(request, "Rate limit error")
+          messages.info(request, "Rate limit error")
           return redirect("core:homepage")
         except stripe.error.InvalidRequestError as e:
           # Invalid parameters were supplied to Stripe's API
-          messages(request, "Invalid parameters")
+          messages.info(request, "Invalid parameters")
           return redirect("core:homepage")
         except stripe.error.AuthenticationError as e:
           # Authentication with Stripe's API failed
           # (maybe you changed API keys recently)
-          messages(request, "Not Authentication")
+          messages.info(request, "Not Authentication")
           return redirect("core:homepage")
         except stripe.error.APIConnectionError as e:
           # Network communication with Stripe failed
-          messages(request, "Network EOFError")
+          messages.info(request, "Network EOFError")
           return redirect("core:homepage")
         except stripe.error.StripeError as e:
           # Display a very generic error to the user, and maybe send
           # yourself an email
-          messages(request, "Something went wrong. Your are not charges. Please try again after sometime.")
+          messages.info(request, "Something went wrong. Your are not charges. Please try again after sometime.")
           return redirect("core:homepage")
         except Exception as e:
             # TODO: Send email to ourself
-            messages(request, "Serious error occurred. We have been notified.")
+            messages.info(request, "Serious error occurred. We have been notified.")
             return redirect("core:homepage")
 
             

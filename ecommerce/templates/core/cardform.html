@@ -97,7 +97,7 @@
         </style>
         {%endblock link_style%}
             <script src="https://js.stripe.com/v3/"></script>
-            <form action="." method="post" id="stripe-form">
+            <form action="." method="POST" id="stripe-form">
                 {%csrf_token%}
                 <div class="stripe-form-row">
                     <label for="card-element" id="stripeBtnlabel">
@@ -179,7 +179,7 @@
             // Submit the form with the token ID.
             function stripeTokenHandler(token) {
                 // Insert the token ID into the form so it gets submitted to the server
-                var form = document.getElementById("payment-form");
+                var form = document.getElementById("stripe-form");
                 var hiddenInput = document.createElement("input");
                 hiddenInput.setAttribute("type", "hidden");
                 hiddenInput.setAttribute("name", "stripeToken");
