@@ -1,4 +1,4 @@
-from core.models import Item, Order, OrderItem
+from core.models import BillingAddress, Item, Order, OrderItem, Payment
 from django.contrib import admin
 
 
@@ -14,4 +14,12 @@ class ItemOrderItem(admin.ModelAdmin):
 
 @admin.register(Order)
 class ItemOrder(admin.ModelAdmin):
+    pass
+
+@admin.register(BillingAddress)
+class AdminBillingAddress(admin.ModelAdmin):
+    pass
+
+@admin.register(Payment)
+class AdminPayment(admin.ModelAdmin):
     pass

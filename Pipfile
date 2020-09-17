@@ -19,6 +19,7 @@ django-allauth = "*"
 django-extensions = "*"
 django-crispy-forms = "*"
 django-countries = "*"
+stripe = "*"
 
 [requires]
 python_version = "3.8"

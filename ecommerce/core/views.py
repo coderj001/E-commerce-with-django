@@ -1,5 +1,7 @@
+import stripe
 from core.forms import CheckOutForm
-from core.models import BillingAddress, Item, Order, OrderItem
+from core.models import BillingAddress, Item, Order, OrderItem, Payment
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -44,8 +46,8 @@ class CheckOutPage(View):
         try:
             order = Order.objects.get(user=request.user, ordered=False)
             if form.is_valid():
-                street_address = form.cleaned_data.get('street_address ')
-                apparment_address = form.cleaned_data.get('apparment_address ')
+                street_address = form.cleaned_data.get('street_address')
+                apparment_address = form.cleaned_data.get('apparment_address')
                 country = form.cleaned_data.get('country')
                 zipcode = form.cleaned_data.get('zipcode')
                 # TODO: add functionality for there fields
@@ -70,11 +72,76 @@ class CheckOutPage(View):
             return redirect("core:homepage")
 
 class PaymentView(View):
+
     def get(self, request, *args, **kwargs):
         return render(request, 'core/payment.html')
 
+    def post(self, request, *args, **kwargs):
+        order = Order.objects.get(user=request.user, ordered=False)
+        token = request.POST.get('stripeToken')
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        amount = order.get_total(),
+
+        try:
+            charge = stripe.Charge.create(
+                    amount=amount,
+                    currency="usd",
+                    source=token,
+                )
+            payment = Payment()
+            payment.stripe_charge_id = charge['id']
+            payment.user = self.request.user
+            payment.amount = amount
+            payment.save()
+
+            order.ordered = True
+            order.payment = payment
+            order.save()
+            messages(request, "Your order successfull")
+            return redirect("core:homepage")
+        except stripe.error.CardError as e:
+          # Since it's a decline, stripe.error.CardError will be caught
+
+          print('Status is: %s' % e.http_status)
+          print('Type is: %s' % e.error.type)
+          print('Code is: %s' % e.error.code)
+          # param is '' in this case
+          print('Param is: %s' % e.error.param)
+          print('Message is: %s' % e.error.message)
+          messages(request, e.error.message)
+          return redirect("core:homepage")
+        except stripe.error.RateLimitError as e:
+          # Too many requests made to the API too quickly
+          messages(request, "Rate limit error")
+          return redirect("core:homepage")
+        except stripe.error.InvalidRequestError as e:
+          # Invalid parameters were supplied to Stripe's API
+          messages(request, "Invalid parameters")
+          return redirect("core:homepage")
+        except stripe.error.AuthenticationError as e:
+          # Authentication with Stripe's API failed
+          # (maybe you changed API keys recently)
+          messages(request, "Not Authentication")
+          return redirect("core:homepage")
+        except stripe.error.APIConnectionError as e:
+          # Network communication with Stripe failed
+          messages(request, "Network EOFError")
+          return redirect("core:homepage")
+        except stripe.error.StripeError as e:
+          # Display a very generic error to the user, and maybe send
+          # yourself an email
+          messages(request, "Something went wrong. Your are not charges. Please try again after sometime.")
+          return redirect("core:homepage")
+        except Exception as e:
+            # TODO: Send email to ourself
+            messages(request, "Serious error occurred. We have been notified.")
+            return redirect("core:homepage")
+
+            
+
+
 @login_required
-def add_to_cart(request,slug):
+def add_to_cart(request, slug):
     item = get_object_or_404(Item,slug=slug)
     order_item, created = OrderItem.objects.get_or_create(item=item,user=request.user,ordered=False)
     order_qs = Order.objects.filter(user=request.user,ordered=False)

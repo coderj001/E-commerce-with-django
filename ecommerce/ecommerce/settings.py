@@ -130,3 +130,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 LOGIN_REDIRECT_URL = '/'
+
+# Stripe
+STRIPE_SECRET_KEY = os.environ['stripe_secret_key']
