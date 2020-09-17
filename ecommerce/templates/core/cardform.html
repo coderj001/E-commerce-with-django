@@ -159,7 +159,7 @@
             });
 
             // Handle form submission.
-            var form = document.getElementById("payment-form");
+            var form = document.getElementById("stripe-form");
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
 
@@ -187,17 +187,6 @@
 
                 // Submit the form
                 form.submit();
-            }
-
-            var successElement = document.getElementById("stripe-token-handler");
-            document.querySelector(".wrapper").addEventListener("click", function () {
-                successElement.className = "is-hidden";
-            });
-
-            // Not in demo.
-            function stripeTokenHandler(token) {
-                successElement.className = "";
-                successElement.querySelector(".token").textContent = token.id;
             }
         </script>
         {%endblock script_tags%}
