@@ -10,12 +10,14 @@ from django.views.generic import DetailView, ListView, View
 
 
 class HomePageView(ListView):
+
     model = Item
     context_object_name = 'items'
     paginate_by = 10
     template_name = "core/homepage.html"
 
 class OrderSummeryView(LoginRequiredMixin, View):
+
     def get(self, request, *args, **kwargs):
         try:
             order=Order.objects.get(user=request.user, ordered=False)
@@ -25,17 +27,18 @@ class OrderSummeryView(LoginRequiredMixin, View):
             return redirect("core:homepage")
         return render(request, "core/ordersummery.html", context)
 
-
 class ProductPageView(DetailView):
     model = Item
     context_object_name = 'item'
     template_name = "core/productpage.html"
 
 class CheckOutPage(View):
+
     def get(self, request, *args, **kwargs):
         form = CheckOutForm()
         context = { 'form': form }
         return render(request, "core/checkoutpage.html", context)
+
     def post(self, request, *args, **kwargs):
         form = CheckOutForm(request.POST or None)
         try:
@@ -43,8 +46,8 @@ class CheckOutPage(View):
             if form.is_valid():
                 street_address = form.cleaned_data.get('street_address ')
                 apparment_address = form.cleaned_data.get('apparment_address ')
-                country = form.cleaned_data.get('country ')
-                zipcodes = form.cleaned_data.get('zipcodes ')
+                country = form.cleaned_data.get('country')
+                zipcode = form.cleaned_data.get('zipcode')
                 # TODO: add functionality for there fields
                 # same_shipping_address = form.cleaned_data.get('same_shipping_address ')
                 # save_info = form.cleaned_data.get('save_info ')

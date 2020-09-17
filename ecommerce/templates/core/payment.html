@@ -1,7 +1,10 @@
-{% extends "base.html" %} {% block content %}
-{% load crispy_forms_tags %}
-{%block head_link%}
-{%endblock%}
+{% extends "base.html" %}
+
+{%block link_style%}
+
+{%endblock link_style%}
+
+{% block content %}
 <!-- Navbar -->
 {% include "core/navbar.html" %}
 <!-- Navbar -->
@@ -20,18 +23,7 @@
         <div class="card">
           <!--Card content-->
           <div class="m-3 p-2">
-            <form id="payment-form">
-              <div id="card-element"><!--Stripe.js injects the Card Element--></div>
-              <button id="submit">
-                <div class="spinner hidden" id="spinner"></div>
-                <span id="button-text">Pay</span>
-              </button>
-              <p id="card-error" role="alert"></p>
-              <p class="result-message hidden">
-                Payment succeeded, see the result in your
-                <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
-              </p>
-            </form>
+              {%include 'core/cardform.html'%}
           </div>
           <!--Card content-->
         </div>
@@ -122,4 +114,5 @@
 <!--Footer-->
 {% include "core/footer.html" %}
 <!--/.Footer-->
-{% endblock content %} {% block head_title %} Checkout Page {% endblock %}
+{% endblock content %}
+{% block head_title %} Checkout Page {% endblock %}
