@@ -22,7 +22,7 @@ class OrderSummeryView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         try:
-            order=Order.objects.get(user=request.user, ordered=False)
+            order = Order.objects.get(user=request.user, ordered=False)
             context = {'order':order}
         except ObjectDoesNotExist:
             messages.error(request, "You do not have an active order.")
@@ -38,7 +38,8 @@ class CheckOutPage(View):
 
     def get(self, request, *args, **kwargs):
         form = CheckOutForm()
-        context = { 'form': form }
+        order = Order.objects.get(user=request.user, ordered=False)
+        context = {'form': form, 'order': order}
         return render(request, "core/checkoutpage.html", context)
 
     def post(self, request, *args, **kwargs):
@@ -84,7 +85,7 @@ class PaymentView(View):
         context = {
                 'order': order
             }
-        return render(request, 'core/payment.html',context=context)
+        return render(request, 'core/payment.html', context=context)
 
     def post(self, request, *args, **kwargs):
         order = Order.objects.get(user=request.user, ordered=False)
@@ -99,11 +100,17 @@ class PaymentView(View):
                     amount=amount,
                     currency="inr",
                 )
+            # Create Payment
             payment = Payment()
             payment.stripe_charge_id = charge['id']
             payment.user = self.request.user
             payment.amount = order.get_total()
             payment.save()
+
+            order_items = order.items.all()
+            order_items.update(ordered=True)
+            for item in order_items:
+                item.save()
 
             order.ordered = True
             order.payment = payment
