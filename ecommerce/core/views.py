@@ -1,5 +1,5 @@
 import stripe
-from core.forms import CheckOutForm
+from core.forms import CheckOutForm, CouponForm
 from core.models import BillingAddress, Coupon, Item, Order, OrderItem, Payment
 from django.conf import settings
 from django.contrib import messages
@@ -15,7 +15,7 @@ class HomePageView(ListView):
 
     model = Item
     context_object_name = 'items'
-    paginate_by = 10
+    paginate_by = 8
     template_name = "core/homepage.html"
 
 class OrderSummeryView(LoginRequiredMixin, View):
@@ -38,8 +38,9 @@ class CheckOutPage(View):
 
     def get(self, request, *args, **kwargs):
         form = CheckOutForm()
+        coupon_form = CouponForm()
         order = Order.objects.get(user=request.user, ordered=False)
-        context = {'form': form, 'order': order}
+        context = {'form': form, 'couponform': coupon_form, 'order': order, 'DISPLAY_COUPON_FORM': True}
         return render(request, "core/checkoutpage.html", context)
 
     def post(self, request, *args, **kwargs):
@@ -55,7 +56,7 @@ class CheckOutPage(View):
                 # same_shipping_address = form.cleaned_data.get('same_shipping_address ')
                 # save_info = form.cleaned_data.get('save_info ')
                 payment_option = form.cleaned_data.get('payment_option')
-                billing_address=BillingAddress(
+                billing_address = BillingAddress(
                         user=request.user,
                         street_address=street_address,
                         country=country,
@@ -63,7 +64,8 @@ class CheckOutPage(View):
                         )
                 billing_address.save()
                 order.billing_address = billing_address
-                order.ordered = True
+                # order.ordered = True
+                order.save()
                 # TODO: redirect to selected payment options
                 if payment_option == 'S':
                     return redirect('core:payment', payment_option='stripe')
@@ -82,10 +84,15 @@ class PaymentView(View):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(user=request.user, ordered=False)
-        context = {
-                'order': order
-            }
-        return render(request, 'core/payment.html', context=context)
+        if order.billing_address:
+            context = {
+                    'order': order,
+                    'DISPLAY_COUPON_FORM': False
+                }
+            return render(request, 'core/payment.html', context=context)
+        else:
+            messages.error(request, 'You have not added a billing address')
+            return redirect("core:checkoutpage")
 
     def post(self, request, *args, **kwargs):
         order = Order.objects.get(user=request.user, ordered=False)
@@ -232,13 +239,18 @@ def get_coupon(request, code):
         messages.info(request, "This coupon is not valid.")
         return redirect("core:checkoutpage")
 
-def add_coupon(request, code):
-    try:
-        order = Order.objects.get(user=request.user, ordered=False)
-        order.coupon = get_coupon(request,code)
-        order.save()
-        messages.success(request, "Successfully added coupon.")
-        return redirect("core:checkoutpage")
-    except:
-        messages.info(request, "You don't have active order")
-        return redirect("core:checkoutpage")
+class AddCouponView(View):
+
+    def post(self, request, *args, **kwargs):
+        form = CouponForm(request.POST or None)
+        if form.is_valid():
+            try:
+                code = form.cleaned_data.get('code')
+                order = Order.objects.get(user=request.user, ordered=False)
+                order.coupon = get_coupon(request, code)
+                order.save()
+                messages.success(request, "Successfully added coupon.")
+                return redirect("core:checkoutpage")
+            except ObjectDoesNotExist:
+                messages.info(request, "You don't have active order")
+                return redirect("core:checkoutpage")
