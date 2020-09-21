@@ -12,6 +12,7 @@ faker = "*"
 ipython = "*"
 ipdb = "*"
 werkzeug = "*"
+django-debug-toolbar = "*"
 
 [packages]
 django = "==3.0.0"
@@ -20,6 +21,7 @@ django-extensions = "*"
 django-crispy-forms = "*"
 django-countries = "*"
 stripe = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.8"

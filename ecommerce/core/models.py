@@ -26,8 +26,9 @@ class Item(models.Model):
     category = models.CharField(max_length=2, choices=CATAGORY_CHOICES, verbose_name="Select category of product")
     label = models.CharField(max_length=1, choices=LABEL_CHOICES, verbose_name="Select level of product")
     slug = models.SlugField(max_length=255, verbose_name="slug field", editable=False)
-    slug = AutoSlugField(('slug'), max_length=255, unique=True, populate_from=('title','id'))
-    description=models.TextField()
+    slug = AutoSlugField(('slug'), max_length=255, unique=True, populate_from=('title', 'id'))
+    description = models.TextField()
+    image =  models.ImageField(default="default_card.jpg")
 
     def __str__(self):
         return self.title
