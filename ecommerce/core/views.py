@@ -1,6 +1,6 @@
 import stripe
 from core.forms import CheckOutForm
-from core.models import BillingAddress, Item, Order, OrderItem, Payment
+from core.models import BillingAddress, Coupon, Item, Order, OrderItem, Payment
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -223,3 +223,22 @@ def remove_single_item_from_cart(request, slug):
         messages.info(request, "You don't have active order.")
         return redirect("core:productpage", slug=slug)
     return redirect("core:productpage", slug=slug)
+
+def get_coupon(request, code):
+    try:
+        coupon = Coupon.objects.get(code=code)
+        return coupon
+    except:
+        messages.info(request, "This coupon is not valid.")
+        return redirect("core:checkoutpage")
+
+def add_coupon(request, code):
+    try:
+        order = Order.objects.get(user=request.user, ordered=False)
+        order.coupon = get_coupon(request,code)
+        order.save()
+        messages.success(request, "Successfully added coupon.")
+        return redirect("core:checkoutpage")
+    except:
+        messages.info(request, "You don't have active order")
+        return redirect("core:checkoutpage")
