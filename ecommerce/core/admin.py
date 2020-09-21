@@ -14,7 +14,8 @@ class ItemOrderItem(admin.ModelAdmin):
 
 @admin.register(Order)
 class ItemOrder(admin.ModelAdmin):
-    pass
+    list_display = ['user', 'ordered']
+    ordering = ('-ordered_date',)
 
 @admin.register(BillingAddress)
 class AdminBillingAddress(admin.ModelAdmin):
