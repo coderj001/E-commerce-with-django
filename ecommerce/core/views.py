@@ -1,3 +1,6 @@
+import random
+import string
+
 import stripe
 from core.forms import CheckOutForm, CouponForm
 from core.models import BillingAddress, Coupon, Item, Order, OrderItem, Payment
@@ -10,6 +13,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.generic import DetailView, ListView, View
 
+
+def create_ref_code():
+    return ''.join(random.choices(string.ascii_lowercase+string.digits+string.ascii_uppercase, k=20))
 
 class HomePageView(ListView):
 
@@ -121,6 +127,8 @@ class PaymentView(View):
 
             order.ordered = True
             order.payment = payment
+            # TODO: assign ref_code
+            order.ref_code = create_ref_code()
             order.save()
             messages.info(request, "Your order successfull")
             return redirect("core:homepage")
@@ -254,3 +262,8 @@ class AddCouponView(View):
             except ObjectDoesNotExist:
                 messages.info(request, "You don't have active order")
                 return redirect("core:checkoutpage")
+
+class RequestRefundView(View):
+
+    def post(self, request, *args, **kwargs):
+        pass
