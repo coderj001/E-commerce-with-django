@@ -13,6 +13,8 @@ ipython = "*"
 ipdb = "*"
 werkzeug = "*"
 django-debug-toolbar = "*"
+bpython = "*"
+ptpython = "*"
 
 [packages]
 django = "==3.0.0"
