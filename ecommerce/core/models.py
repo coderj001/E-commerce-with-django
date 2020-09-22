@@ -19,6 +19,7 @@ LABEL_CHOICES = (
         )
 
 class Item(models.Model):
+
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     title = models.CharField(max_length=255, blank=False, verbose_name="Item title")
     price = models.FloatField(verbose_name="Item price")
@@ -42,6 +43,7 @@ class Item(models.Model):
         return reverse("core:remove-from-cart", kwargs={'slug':self.slug})
 
 class OrderItem(models.Model):
+
     id = models.AutoField(primary_key=True, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     ordered = models.BooleanField(default=False)
@@ -61,6 +63,7 @@ class OrderItem(models.Model):
         return self.get_total_item_price()
 
 class Order(models.Model):
+
     id = models.UUIDField(primary_key=True,editable=False, default=uuid.uuid1)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField(OrderItem)
@@ -69,6 +72,10 @@ class Order(models.Model):
     billing_address = models.ForeignKey('BillingAddress', on_delete=models.SET_NULL, blank=True, null=True)
     payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, blank=True, null=True)
     coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, blank=True, null=True)
+    being_delivered = models.BooleanField(default=False)
+    received = models.BooleanField(default=False)
+    refund_requested = models.BooleanField(default=False)
+    refund_granted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -80,6 +87,18 @@ class Order(models.Model):
         if self.coupon:
             total -= self.coupon.amount
         return total
+
+    '''
+    Order Lifecycle
+    1. Item added to cart
+    2. Added billing address to cart
+    (Failed Checkout)
+    3. Payment
+    (Preprocessing, processing, packaging etc.)
+    4. Begin delivered
+    5. Recived
+    6. Refunds
+    '''
 
 class BillingAddress(models.Model):
 
