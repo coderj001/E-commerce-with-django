@@ -266,12 +266,19 @@ class AddCouponView(View):
 
 class RequestRefundView(View):
 
+    def get(self, request, *args, **kwargs):
+        form = RefundForm()
+        context = {
+                'form': form,
+            }
+        return render(request, 'core/requestrefund.html', context)
+
     def post(self, request, *args, **kwargs):
         form = RefundForm(request.POST)
         if form.is_valid():
-            ref_code = form.changed_data('ref_code')
-            message = form.changed_data('message')
-            email = form.changed_data('email')
+            ref_code = form.cleaned_data['ref_code']
+            message = form.cleaned_data['message']
+            email = form.cleaned_data['email']
             # edit the order
             try:
                 order = Order.objects.get(ref_code=ref_code)
@@ -284,8 +291,8 @@ class RequestRefundView(View):
                 refund.reason = message
                 refund.email = email
                 refund.save()
-                message.info(request, "Your request was please wait for email to conform it.")
-                return redirect("core:homepage")
+                messages.info(request, "Your request was please wait for email to conform it.")
+                return redirect("core:request-refund")
             except ObjectDoesNotExist:
-                message.info(request, "This order dose not exists.")
-                return redirect("core:homepage")
+                messages.info(request, "This order dose not exists.")
+                return redirect("core:request-refund")
