@@ -8,6 +8,7 @@ PAYMENT_OPTION = (
     )
 
 class CheckOutForm(forms.Form):
+
     street_address = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'1234 Main St', 'class':'form-control', 'id':'address'}))
     apparment_address = forms.CharField(required=False, widget=forms.TextInput(attrs={'placeholder':'apartment or suite', 'id':'address-2', 'class':'form-control'}))
     country = CountryField(blank_label='(select country)').formfield(widget=CountrySelectWidget(attrs={'class':'custom-select d-block w-100'}))
@@ -17,6 +18,7 @@ class CheckOutForm(forms.Form):
     payment_option = forms.ChoiceField(widget=forms.RadioSelect(), choices=PAYMENT_OPTION)
 
 class CouponForm(forms.Form):
+
     code = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Promo Code',
@@ -25,5 +27,7 @@ class CouponForm(forms.Form):
         }))
 
 class RefundForm(forms.Form):
+
     ref_code = forms.CharField()
     message = forms.Textarea()
+    email = forms.EmailField()

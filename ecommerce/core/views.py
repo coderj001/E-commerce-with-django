@@ -2,8 +2,9 @@ import random
 import string
 
 import stripe
-from core.forms import CheckOutForm, CouponForm
-from core.models import BillingAddress, Coupon, Item, Order, OrderItem, Payment
+from core.forms import CheckOutForm, CouponForm, RefundForm
+from core.models import (BillingAddress, Coupon, Item, Order, OrderItem,
+                         Payment, Refund)
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -266,4 +267,25 @@ class AddCouponView(View):
 class RequestRefundView(View):
 
     def post(self, request, *args, **kwargs):
-        pass
+        form = RefundForm(request.POST)
+        if form.is_valid():
+            ref_code = form.changed_data('ref_code')
+            message = form.changed_data('message')
+            email = form.changed_data('email')
+            # edit the order
+            try:
+                order = Order.objects.get(ref_code=ref_code)
+                order.refund_requested = True
+                order.save()
+
+                # store the refund
+                refund = Refund()
+                refund.order = order
+                refund.reason = message
+                refund.email = email
+                refund.save()
+                message.info(request, "Your request was please wait for email to conform it.")
+                return redirect("core:homepage")
+            except ObjectDoesNotExist:
+                message.info(request, "This order dose not exists.")
+                return redirect("core:homepage")

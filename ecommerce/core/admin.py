@@ -1,4 +1,5 @@
-from core.models import BillingAddress, Coupon, Item, Order, OrderItem, Payment
+from core.models import (BillingAddress, Coupon, Item, Order, OrderItem,
+                         Payment, Refund)
 from django.contrib import admin
 
 
@@ -30,4 +31,8 @@ class AdminPayment(admin.ModelAdmin):
 
 @admin.register(Coupon)
 class AdminCoupon(admin.ModelAdmin):
+    pass
+
+@admin.register(Refund)
+class AdminRefund(admin.ModelAdmin):
     pass
