@@ -16,7 +16,10 @@ from django.views.generic import DetailView, ListView, View
 
 
 def create_ref_code():
-    return ''.join(random.choices(string.ascii_lowercase+string.digits+string.ascii_uppercase, k=20))
+    return ''.join(random.choices(
+        string.ascii_lowercase+string.digits+string.ascii_uppercase, k=20)
+    )
+
 
 class HomePageView(ListView):
 
@@ -25,21 +28,24 @@ class HomePageView(ListView):
     paginate_by = 8
     template_name = "core/homepage.html"
 
+
 class OrderSummeryView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         try:
             order = Order.objects.get(user=request.user, ordered=False)
-            context = {'order':order}
+            context = {'order': order}
         except ObjectDoesNotExist:
             messages.error(request, "You do not have an active order.")
             return redirect("core:homepage")
         return render(request, "core/ordersummery.html", context)
 
+
 class ProductPageView(DetailView):
     model = Item
     context_object_name = 'item'
     template_name = "core/productpage.html"
+
 
 class CheckOutPage(View):
 
@@ -47,7 +53,8 @@ class CheckOutPage(View):
         form = CheckOutForm()
         coupon_form = CouponForm()
         order = Order.objects.get(user=request.user, ordered=False)
-        context = {'form': form, 'couponform': coupon_form, 'order': order, 'DISPLAY_COUPON_FORM': True}
+        context = {'form': form, 'couponform': coupon_form,
+                   'order': order, 'DISPLAY_COUPON_FORM': True}
         return render(request, "core/checkoutpage.html", context)
 
     def post(self, request, *args, **kwargs):
@@ -64,11 +71,11 @@ class CheckOutPage(View):
                 # save_info = form.cleaned_data.get('save_info ')
                 payment_option = form.cleaned_data.get('payment_option')
                 billing_address = BillingAddress(
-                        user=request.user,
-                        street_address=street_address,
-                        country=country,
-                        zipcode=zipcode,
-                        )
+                    user=request.user,
+                    street_address=street_address,
+                    country=country,
+                    zipcode=zipcode,
+                )
                 billing_address.save()
                 order.billing_address = billing_address
                 # order.ordered = True
@@ -87,15 +94,16 @@ class CheckOutPage(View):
             messages.error(request, 'Order does not exist.')
             return redirect("core:homepage")
 
+
 class PaymentView(View):
 
     def get(self, request, *args, **kwargs):
         order = Order.objects.get(user=request.user, ordered=False)
         if order.billing_address:
             context = {
-                    'order': order,
-                    'DISPLAY_COUPON_FORM': False
-                }
+                'order': order,
+                'DISPLAY_COUPON_FORM': False
+            }
             return render(request, 'core/payment.html', context=context)
         else:
             messages.error(request, 'You have not added a billing address')
@@ -109,11 +117,11 @@ class PaymentView(View):
 
         try:
             charge = stripe.Charge.create(
-                    description="Software development services",
-                    source=token,
-                    amount=amount,
-                    currency="inr",
-                )
+                description="Software development services",
+                source=token,
+                amount=amount,
+                currency="inr",
+            )
             # Create Payment
             payment = Payment()
             payment.stripe_charge_id = charge['id']
@@ -134,55 +142,56 @@ class PaymentView(View):
             messages.info(request, "Your order successfull")
             return redirect("core:homepage")
         except stripe.error.CardError as e:
-          # Since it's a decline, stripe.error.CardError will be caught
+            # Since it's a decline, stripe.error.CardError will be caught
 
-          print('Status is: %s' % e.http_status)
-          print('Type is: %s' % e.error.type)
-          print('Code is: %s' % e.error.code)
-          # param is '' in this case
-          print('Param is: %s' % e.error.param)
-          print('Message is: %s' % e.error.message)
-          messages.info(request, e.error.message)
-          return redirect("core:homepage")
+            print('Status is: %s' % e.http_status)
+            print('Type is: %s' % e.error.type)
+            print('Code is: %s' % e.error.code)
+            # param is '' in this case
+            print('Param is: %s' % e.error.param)
+            print('Message is: %s' % e.error.message)
+            messages.info(request, e.error.message)
+            return redirect("core:homepage")
         except stripe.error.RateLimitError as e:
-          # Too many requests made to the API too quickly
-          messages.info(request, "Rate limit error")
-          return redirect("core:homepage")
+            # Too many requests made to the API too quickly
+            messages.info(request, "Rate limit error")
+            return redirect("core:homepage")
         except stripe.error.InvalidRequestError as e:
-          # Invalid parameters were supplied to Stripe's API
-          messages.info(request, "Invalid parameters")
-          return redirect("core:homepage")
+            # Invalid parameters were supplied to Stripe's API
+            messages.info(request, "Invalid parameters")
+            return redirect("core:homepage")
         except stripe.error.AuthenticationError as e:
-          # Authentication with Stripe's API failed
-          # (maybe you changed API keys recently)
-          messages.info(request, "Not Authentication")
-          return redirect("core:homepage")
+            # Authentication with Stripe's API failed
+            # (maybe you changed API keys recently)
+            messages.info(request, "Not Authentication")
+            return redirect("core:homepage")
         except stripe.error.APIConnectionError as e:
-          # Network communication with Stripe failed
-          messages.info(request, "Network EOFError")
-          return redirect("core:homepage")
+            # Network communication with Stripe failed
+            messages.info(request, "Network EOFError")
+            return redirect("core:homepage")
         except stripe.error.StripeError as e:
-          # Display a very generic error to the user, and maybe send
-          # yourself an email
-          messages.info(request, "Something went wrong. Your are not charges. Please try again after sometime.")
-          return redirect("core:homepage")
+            # Display a very generic error to the user, and maybe send
+            # yourself an email
+            messages.info(
+                request, "Something went wrong. Your are not charges. Please try again after sometime.")
+            return redirect("core:homepage")
         except Exception as e:
             # TODO: Send email to ourself
-            messages.info(request, "Serious error occurred. We have been notified.")
+            messages.info(
+                request, "Serious error occurred. We have been notified.")
             return redirect("core:homepage")
-
-            
 
 
 @login_required
 def add_to_cart(request, slug):
-    item = get_object_or_404(Item,slug=slug)
-    order_item, created = OrderItem.objects.get_or_create(item=item,user=request.user,ordered=False)
-    order_qs = Order.objects.filter(user=request.user,ordered=False)
+    item = get_object_or_404(Item, slug=slug)
+    order_item, created = OrderItem.objects.get_or_create(
+        item=item, user=request.user, ordered=False)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
     if order_qs.exists():
         order = order_qs[0]
         if order.items.filter(item__slug=item.slug).exists():
-            order_item.quantity+=1
+            order_item.quantity += 1
             order_item.save()
             messages.info(request, "This item quantity increased by one.")
             return redirect("core:order-summery")
@@ -191,20 +200,23 @@ def add_to_cart(request, slug):
             messages.info(request, "This item was add to your cart.")
     else:
         ordered_date = timezone.now()
-        order = Order.objects.create(user=request.user, ordered_date=ordered_date)
+        order = Order.objects.create(
+            user=request.user, ordered_date=ordered_date)
         order.items.add(order_item)
         messages.info(request, "Item was added to your cart.")
         return redirect("core:productpage", slug=slug)
     return redirect("core:order-summery")
 
+
 @login_required
 def remove_from_cart(request, slug):
-    item = get_object_or_404(Item,slug=slug)
-    order_qs = Order.objects.filter(user=request.user,ordered=False)
+    item = get_object_or_404(Item, slug=slug)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
     if order_qs.exists():
         order = order_qs[0]
         if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(item=item,user=request.user,ordered=False)[0]
+            order_item = OrderItem.objects.filter(
+                item=item, user=request.user, ordered=False)[0]
             order.items.remove(order_item)
             order_item.delete()
             messages.info(request, "This item was removed from your cart.")
@@ -216,6 +228,7 @@ def remove_from_cart(request, slug):
         return redirect("core:productpage", slug=slug)
     return redirect("core:productpage", slug=slug)
 
+
 @login_required
 def remove_single_item_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
@@ -223,7 +236,8 @@ def remove_single_item_from_cart(request, slug):
     if order_qs.exists():
         order = order_qs[0]
         if order.items.filter(item__slug=item.slug).exists():
-            order_item = OrderItem.objects.filter(item=item, user=request.user, ordered=False)[0]
+            order_item = OrderItem.objects.filter(
+                item=item, user=request.user, ordered=False)[0]
             if order_item.quantity > 1:
                 order_item.quantity -= 1
                 order_item.save()
@@ -240,6 +254,7 @@ def remove_single_item_from_cart(request, slug):
         return redirect("core:productpage", slug=slug)
     return redirect("core:productpage", slug=slug)
 
+
 def get_coupon(request, code):
     try:
         coupon = Coupon.objects.get(code=code)
@@ -247,6 +262,7 @@ def get_coupon(request, code):
     except:
         messages.info(request, "This coupon is not valid.")
         return redirect("core:checkoutpage")
+
 
 class AddCouponView(View):
 
@@ -264,13 +280,14 @@ class AddCouponView(View):
                 messages.info(request, "You don't have active order")
                 return redirect("core:checkoutpage")
 
+
 class RequestRefundView(View):
 
     def get(self, request, *args, **kwargs):
         form = RefundForm()
         context = {
-                'form': form,
-            }
+            'form': form,
+        }
         return render(request, 'core/requestrefund.html', context)
 
     def post(self, request, *args, **kwargs):
@@ -291,7 +308,8 @@ class RequestRefundView(View):
                 refund.reason = message
                 refund.email = email
                 refund.save()
-                messages.info(request, "Your request was please wait for email to conform it.")
+                messages.info(
+                    request, "Your request was please wait for email to conform it.")
                 return redirect("core:request-refund")
             except ObjectDoesNotExist:
                 messages.info(request, "This order dose not exists.")
